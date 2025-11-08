@@ -1,0 +1,43 @@
+{
+  "total_problems": 5,
+  "passed_problems": 1,
+  "failed_problems": 4,
+  "pass_at_1": 0.2,
+  "results": [
+    {
+      "task_id": "Python/0",
+      "fixed_solution": "for idx, elem in enumerate(numbers):\n        for idx2, elem2 in enumerate(numbers):\n            if idx != idx2:\n                distance = abs(elem - elem2)\n                if distance < threshold:\n                    return True\n\n    return False",
+      "passed": false,
+      "error_message": "Syntax error: unindent does not match any outer indentation level (<string>, line 8)\nTraceback (most recent call last):\n  File \"/Users/david/ProjectsCodebase/jetbrains/jetbrains-anti-bugs-llm/src/pipeline.py\", line 62, in execute_code_with_tests\n    exec(code, namespace)\n  File \"<string>\", line 8\n    return False\n                ^\nIndentationError: unindent does not match any outer indentation level\n",
+      "execution_time": 60.803977966308594
+    },
+    {
+      "task_id": "Python/1",
+      "fixed_solution": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\"Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    result = []\n    current_string = []\n    current_depth = 0\n\n    for c in paren_string:\n        if c == '(':\n            current_depth += 1\n            current_string.append(c)\n        elif c == ')':\n            current_depth -= 1\n            current_string.append(c)\n            if current_depth == 0:\n                result.append(''.join(current_string))\n                current_string.clear()\n\n    return result",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 73.66070580482483
+    },
+    {
+      "task_id": "Python/2",
+      "fixed_solution": "return number % 1.0",
+      "passed": false,
+      "error_message": "Syntax error: 'return' outside function (<string>, line 1)\nTraceback (most recent call last):\n  File \"/Users/david/ProjectsCodebase/jetbrains/jetbrains-anti-bugs-llm/src/pipeline.py\", line 62, in execute_code_with_tests\n    exec(code, namespace)\n  File \"<string>\", line 1\nSyntaxError: 'return' outside function\n",
+      "execution_time": 11.20653486251831
+    },
+    {
+      "task_id": "Python/3",
+      "fixed_solution": "def below_zero(operations: List[int]) -> bool:\n    balance = 0\n    for op in operations:\n        balance += op\n        if balance < 0:\n            return True\n    return False",
+      "passed": false,
+      "error_message": "Runtime error: name 'List' is not defined\nTraceback (most recent call last):\n  File \"/Users/david/ProjectsCodebase/jetbrains/jetbrains-anti-bugs-llm/src/pipeline.py\", line 62, in execute_code_with_tests\n    exec(code, namespace)\n  File \"<string>\", line 1, in <module>\nNameError: name 'List' is not defined\n",
+      "execution_time": 13.799117088317871
+    },
+    {
+      "task_id": "Python/4",
+      "fixed_solution": "def mean_absolute_deviation(numbers: List[float]) -> float:\n    mean = sum(numbers) / len(numbers)\n    return sum(abs(x - mean) for x in numbers) / len(numbers)",
+      "passed": false,
+      "error_message": "Runtime error: name 'List' is not defined\nTraceback (most recent call last):\n  File \"/Users/david/ProjectsCodebase/jetbrains/jetbrains-anti-bugs-llm/src/pipeline.py\", line 62, in execute_code_with_tests\n    exec(code, namespace)\n  File \"<string>\", line 1, in <module>\nNameError: name 'List' is not defined\n",
+      "execution_time": 5.682024955749512
+    }
+  ]
+}

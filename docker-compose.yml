@@ -1,0 +1,32 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: jetbrains-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_NUM_PARALLEL=4
+      - OLLAMA_MAX_LOADED_MODELS=1
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "ollama serve &
+       sleep 10 &&
+       ollama pull hf.co/unsloth/Qwen3-1.7B-GGUF:UD-Q4_K_XL &&
+       wait"
+    deploy:
+      resources:
+        limits:
+          cpus: '8'        # Increase for better performance
+          memory: 6G
+        reservations:
+          cpus: '4'
+          memory: 2G
+
+volumes:
+  ollama_data:
+    driver: local
+
