@@ -289,9 +289,9 @@ Remember: Keep function name as {state['entry_point']}, make minimal changes.{th
         
         if verbose:
             if passed:
-                print(f"Observation: TESTS PASSED ✓\n")
+                print(f"Observation: TESTS PASSED!\n")
             else:
-                print(f"Observation: TESTS FAILED\n{message}\n")
+                print(f"Observation: TESTS FAILED!\n{message}\n")
         
         # +++ If tests pass, this is our fixed solution
         # +++ If all attempts exhausted, return last attempt
@@ -303,17 +303,17 @@ Remember: Keep function name as {state['entry_point']}, make minimal changes.{th
     
     def route_after_test(state: AgentState) -> Literal["analyze", "end"]:
         """Route after Observation: continue ReAct loop or end."""
-        # +++ Observation shows success - we're done!
+        # +++ Observation shows success -- we're done!
         if state['test_passed']:
             return "end"
         # +++ Max ReAct iterations reached - return best attempt
         elif state['iteration'] >= MAX_ITERATIONS:
             return "end"
-        # +++ Continue ReAct cycle: Observation → Thought + Action
+        # +++ Continue ReAct cycle: Observation -> Thought + Action
         else:
             return "analyze"
     
-    # Build graph - Pure ReAct: Thought+Action → Observation → loop
+    # Build graph - Pure ReAct: Thought+Action -> Observation -> loop
     graph = StateGraph(AgentState)
     
     # Add nodes
