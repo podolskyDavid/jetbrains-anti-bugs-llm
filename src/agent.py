@@ -124,60 +124,106 @@ def extract_code_block(text: str) -> str:
 
 
 FEW_SHOT_EXAMPLES = """
-EXAMPLE 1:
-Buggy Code:
-def is_prime(n):
-    if n < 2:
-        return False
-    for i in range(2, n):
-        if n % i == 0:
-            return False
-    return True
+<examples>
 
-Thought: The loop checks every number from 2 to n-1. This is inefficient - we only need to check up to sqrt(n) because factors come in pairs.
+<example id="1" topic="analyzing_tests_for_patterns">
+<buggy_code>
+def count_upper(s):
+    count = 0
+    for i in range(0, len(s), 2):
+        if s[i] in "AEIOU":
+            count += 2
+    return count
+</buggy_code>
 
-Action:
-def is_prime(n):
-    if n < 2:
-        return False
-    for i in range(2, int(n**0.5) + 1):
-        if n % i == 0:
-            return False
-    return True
+<tests>
+assert count_upper('aBCdEf') == 1
+assert count_upper('dBBE') == 0
+assert count_upper('EEEE') == 2
+</tests>
 
-EXAMPLE 2:
-Buggy Code:
+<thought>
+Let me analyze the test cases carefully:
+- 'aBCdEf': Has E at index 4. Test expects 1.
+- 'dBBE': Has E at index 3. Test expects 0.
+- 'EEEE': Has E at indices 0,1,2,3. Test expects 2.
+
+Pattern: Only positions at EVEN indices (0,2,4...) count! Looking at 'dBBE', E is at index 3 (odd) → 0. Looking at 'EEEE', E at indices 0,2 → count is 2. 
+
+The buggy code has TWO errors: (1) counts by 2 instead of 1, (2) returns count*2. Fix: check even indices, count by 1.
+</thought>
+
+<action>
+```python
+def count_upper(s):
+    count = 0
+    for i in range(0, len(s), 2):
+        if s[i] in "AEIOU":
+            count += 1
+    return count
+```
+</action>
+</example>
+
+<example id="2" topic="understanding_recursion_from_tests">
+<buggy_code>
 def factorial(n):
     if n == 0:
         return 1
     return n * factorial(n + 1)
+</buggy_code>
 
-Thought: The recursive call uses n+1, which increases n instead of decreasing it. This causes infinite recursion. Should be n-1 to reach base case.
+<tests>
+assert factorial(0) == 1
+assert factorial(3) == 6
+</tests>
 
-Action:
+<thought>
+The recursive call uses n+1, which increases n instead of decreasing it. This causes infinite recursion because we never reach the base case n==0. Should be n-1 to count down to base case.
+</thought>
+
+<action>
+```python
 def factorial(n):
     if n == 0:
         return 1
     return n * factorial(n - 1)
+```
+</action>
+</example>
 
-EXAMPLE 3:
-Buggy Code:
+<example id="3" topic="edge_cases_reveal_bugs">
+<buggy_code>
 def find_max(numbers):
     max_val = 0
     for num in numbers:
         if num > max_val:
             max_val = num
     return max_val
+</buggy_code>
 
-Thought: Initializing max_val to 0 is wrong - if all numbers are negative, it returns 0 instead of the actual maximum. Should initialize to first element.
+<tests>
+assert find_max([1, 5, 3]) == 5
+assert find_max([-10, -5, -20]) == -5
+</tests>
 
-Action:
+<thought>
+Test with all negative numbers reveals the bug! Initializing max_val to 0 fails when all numbers are negative (-10, -5, -20 are all < 0), so it returns 0 instead of -5. Must initialize to first element or negative infinity.
+</thought>
+
+<action>
+```python
 def find_max(numbers):
     max_val = numbers[0]
     for num in numbers:
         if num > max_val:
             max_val = num
     return max_val
+```
+</action>
+</example>
+
+</examples>
 """
 
 
@@ -199,59 +245,108 @@ def create_react_graph(enable_thinking: bool, verbose: bool = False) -> StateGra
         thinking_directive = get_thinking_directive(enable_thinking)
         iteration = state['iteration']
         
+        # +++ Calculate remaining attempts dynamically
+        remaining_attempts = MAX_ITERATIONS - iteration
+        if remaining_attempts == 1:
+            attempts_message = "You have ONLY 1 attempt left to fix the code"
+        else:
+            attempts_message = f"You have {remaining_attempts} attempts remaining"
+        
         # Build context from previous attempts using ReAct observation 
         context = ""
         if iteration > 0 and state.get('test_result'):
             context = f"""
-OBSERVATION (from previous attempt):
+<observation>
+Your previous fix FAILED. Test output:
+<test_output>
 {state['test_result']}
+</test_output>
 
-Your previous action:
+<previous_action>
 {state['last_fix_attempt']}
+</previous_action>
+</observation>
 
-The test failed. Analyze why and try a different approach.
+<reflection>
+Your previous fix FAILED. You must analyze WHY before trying again.
+
+STOP and manually calculate the expected output:
+1. Take the FIRST test case: work through it step-by-step BY HAND
+2. What value does the test expect? Calculate it manually
+3. What value did your code produce? Why is it different?
+4. What assumption did you make that was WRONG?
+5. CHECK THE FUNCTION SIGNATURE: What parameters does the function take? Are you using ALL of them correctly?
+
+You MUST try a COMPLETELY DIFFERENT approach. Do NOT repeat the same logic!
+</reflection>
 """
         
         # Adjust output instructions based on thinking mode
         if enable_thinking:
-            output_instruction = """Follow the ReAct pattern:
+            output_instruction = """<instructions>
+Provide your response following the ReAct pattern:
 
-Thought: [Identify the bug and plan your fix - this will be in your internal reasoning]
+<thought>
+[Analyze the test cases carefully to understand requirements, identify the bug, and plan your fix - this reasoning will be in your internal <think> tags]
+</thought>
 
-Action (output only the fixed code):
+<action>
 ```python
 def {entry_point}(...):
     # fixed implementation
     pass
-```"""
+```
+</action>
+</instructions>"""
         else:
-            output_instruction = """Follow the ReAct pattern:
+            output_instruction = """<instructions>
+Provide your response following the ReAct pattern:
 
-Thought: [Identify the bug and plan your fix]
+<thought>
+[First, analyze test cases carefully - what inputs? what outputs? what patterns? Then identify the bug and plan your fix]
+</thought>
 
-Action:
+<action>
 ```python
 def {entry_point}(...):
     # fixed implementation
     pass
-```"""
+```
+</action>
+</instructions>"""
         
-        prompt = f"""You are an expert Python debugger using the ReAct (Reasoning + Acting) approach.
+        prompt = f"""<system>
+You are an expert Python debugger using the ReAct approach: Reasoning (think deeply about the bug) + Acting (propose a fix) + Observing (test and learn from results). {attempts_message}.
+</system>
+
+<critical_instructions>
+Before proposing any fix, you MUST carefully analyze the test cases:
+1. What are the exact inputs being tested?
+2. What are the expected outputs?
+3. Manually calculate: work through the FIRST test case by hand to understand the logic
+4. What patterns or rules do you see in the input-output relationships?
+5. Do edge cases reveal special requirements (e.g., only uppercase? only even indices? only certain conditions)?
+
+Study the examples below to see how to analyze tests properly.
+</critical_instructions>
 
 {FEW_SHOT_EXAMPLES}
 
-CURRENT TASK:
-Buggy Code:
+<task>
+<buggy_code>
 {state['buggy_solution']}
+</buggy_code>
 
-Tests (must all pass):
+<tests>
 {state['test']}
+</tests>
+
+<note>All tests must pass. Keep function name as {state['entry_point']}, make minimal necessary changes.</note>
+</task>
 
 {context}
 
-{output_instruction.format(entry_point=state['entry_point'])}
-
-Remember: Keep function name as {state['entry_point']}, make minimal changes.{thinking_directive}"""
+{output_instruction.format(entry_point=state['entry_point'])}{thinking_directive}"""
         
         if verbose and iteration == 0:
             print("+++ REACT ITERATION 1: THOUGHT + ACTION +++\n")
