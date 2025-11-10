@@ -188,18 +188,18 @@ def run_benchmark(
             example_test=row.get('example_test')
         )
         
-        if verbose:
-            print(f"\n[{idx + 1}/{num_problems}] Evaluating problem: {problem.task_id}")
+        # if verbose:
+        print(f"\n[{idx + 1}/{num_problems}] Evaluating problem: {problem.task_id}")
         
         # Evaluate the problem
         result = evaluate_single_problem(problem, verbose=verbose, enable_thinking=enable_thinking)
         benchmark_result.add_result(result)
         
-        if verbose and (idx + 1) % 10 == 0:
-            print(f"\n--- Progress: {idx + 1}/{num_problems} ---")
-            print(f"  Current pass@1: {benchmark_result.pass_at_1:.2%}")
-            print(f"  Passed: {benchmark_result.passed_problems}")
-            print(f"  Failed: {benchmark_result.failed_problems}")
+        # if verbose and (idx + 1) % 10 == 0:
+        print(f"\n--- Progress: {idx + 1}/{num_problems} ---")
+        print(f"  Current pass@1: {benchmark_result.pass_at_1:.2%}")
+        print(f"  Passed: {benchmark_result.passed_problems}")
+        print(f"  Failed: {benchmark_result.failed_problems}")
     
     if verbose:
         print("\n" + "=" * 80)
