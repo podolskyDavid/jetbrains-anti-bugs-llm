@@ -129,8 +129,11 @@ cat results/benchmark_results.json | jq '.'
 For development or when you have Ollama running locally:
 
 ```bash
-# Install dependencies
-uv pip install -r pyproject.toml
+# Install dependencies (reads from pyproject.toml and uv.lock)
+uv sync
+
+# Activate the virtual environment (created by uv sync)
+source .venv/bin/activate
 
 # Install Ollama
 brew install ollama
@@ -139,10 +142,13 @@ brew install ollama
 ollama serve &
 ollama pull hf.co/unsloth/Qwen3-1.7B-GGUF:UD-Q8_K_XL
 
-# Run benchmarks
+# Run benchmarks (from activated venv)
 python src/run_benchmark.py                           # Default: 5 problems
 python src/run_benchmark.py --partial 33              # 33% of problems (~54)
 python src/run_benchmark.py --full                    # All 164 problems
+
+# Alternative: Use 'uv run' without activating venv
+uv run python src/run_benchmark.py --partial 10 --debug
 
 # With debug output (shows LLM responses and detailed test results)
 python src/run_benchmark.py --partial 10 --debug
