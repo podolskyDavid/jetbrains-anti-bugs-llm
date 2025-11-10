@@ -1,0 +1,386 @@
+{
+  "total_problems": 54,
+  "passed_problems": 20,
+  "failed_problems": 34,
+  "pass_at_1": 0.37037037037037035,
+  "results": [
+    {
+      "task_id": "Python/137",
+      "fixed_solution": "def compare_one(a, b):\n    # Convert strings to floats if they are strings\n    if isinstance(a, str):\n        a = a.replace(',', '.')\n        a = float(a)\n    if isinstance(b, str):\n        b = b.replace(',', '.')\n        b = float(b)\n    \n    # Compare as floats\n    if float(a) == float(b):\n        return None\n    \n    return a if float(a) > float(b) else b",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpjxduo1xr.py\", line 31, in <module>\n    check(compare_one)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpjxduo1xr.py\", line 23, in check\n    assert compare_one(1, \"2,3\") == \"2,3\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 23.662559986114502
+    },
+    {
+      "task_id": "Python/110",
+      "fixed_solution": "def exchange(lst1, lst2):\n    even = 0\n    odd = 0\n    \n    # Count even and odd numbers in lst2\n    for i in lst2:\n        if i % 2 == 0:\n            even += 1\n        else:\n            odd += 1\n    \n    # Subtract even and odd numbers in lst1 from even and odd in lst2\n    for i in lst1:\n        if i % 2 == 0:\n            even -= 1\n        else:\n            odd -= 1\n    \n    # Check if even is greater than or equal to odd\n    return \"YES\" if even >= odd else \"NO\"",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmprglqizn5.py\", line 35, in <module>\n    check(exchange)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmprglqizn5.py\", line 29, in check\n    assert exchange([5, 7, 3], [2, 6, 3]) == \"NO\" \n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 12.332710981369019
+    },
+    {
+      "task_id": "Python/97",
+      "fixed_solution": "def multiply(a, b):\n    # Compute the product of the absolute values of the digits of a and b\n    # and then multiply them\n    return abs(int(str(a)[::-1]) * int(str(b)[::-1]))",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmprlet3r77.py\", line 21, in <module>\n    check(multiply)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmprlet3r77.py\", line 9, in check\n    assert multiply(148, 412) == 16, \"First test error: \" + str(multiply(148, 412))                    \n           ^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: First test error: 179974\n",
+      "execution_time": 14.71176791191101
+    },
+    {
+      "task_id": "Python/141",
+      "fixed_solution": "def file_name_check(file_name_check):\n    # Fixed implementation\n    parts = file_name_check.split('.')\n    if len(parts) != 2:\n        return 'No'\n    if not parts[0]:\n        return 'No'\n    if not parts[0][0].isalpha():\n        return 'No'\n    if len([x for x in parts[0] if x.isdigit()]) > 3:\n        return 'No'\n    return 'Yes'",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp731m5vi_.py\", line 48, in <module>\n    check(file_name_check)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp731m5vi_.py\", line 19, in check\n    assert file_name_check('s1sdf3.asd') == 'No'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 17.39083695411682
+    },
+    {
+      "task_id": "Python/145",
+      "fixed_solution": "def digits_sum(n):\n    # Handle negative numbers correctly\n    if n < 0:\n        n = -n\n    # Convert to string and process each digit\n    digits = [int(i) for i in str(n)]\n    # Multiply the first digit by -1 if the number was negative\n    if n < 0:\n        digits[0] *= -1\n    return sum(digits)",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmplrxyu68p.py\", line 25, in <module>\n    check(order_by_points)\n          ^^^^^^^^^^^^^^^\nNameError: name 'order_by_points' is not defined\n",
+      "execution_time": 11.872417688369751
+    },
+    {
+      "task_id": "Python/18",
+      "fixed_solution": "def how_many_times(string, substring):\n    # Check if substring is longer than string\n    if len(substring) > len(string):\n        return 0\n    \n    # Initialize count\n    count = 0\n    \n    # Iterate through all possible starting positions\n    for i in range(len(string) - len(substring) + 1):\n        if string[i:i+len(substring)] == substring:\n            count += 1\n    \n    return count",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 3.040302038192749
+    },
+    {
+      "task_id": "Python/93",
+      "fixed_solution": "def encode(message):\n    vowels = \"aeiou\"\n    vowels_replace = dict([(i, chr(ord(i) + 2)) for i in vowels])\n    # First, swap the case of the message\n    message = message.swapcase()\n    # Now, replace vowels\n    return ''.join([vowels_replace[i] if i in vowels else i for i in message])",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmprjukw8ec.py\", line 20, in <module>\n    check(encode)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmprjukw8ec.py\", line 13, in check\n    assert encode('Mudasir') == 'mWDCSKR', \"This prints if this assert fails 2 (good for debugging!)\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: This prints if this assert fails 2 (good for debugging!)\n",
+      "execution_time": 9.862197875976562
+    },
+    {
+      "task_id": "Python/160",
+      "fixed_solution": "def do_algebra(operator, operand):\n    # Build the expression string correctly\n    expression = str(operand[0])\n    for i in range(len(operator)):\n        expression += operator[i] + str(operand[i+1])\n    return eval(expression)",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 2.4070260524749756
+    },
+    {
+      "task_id": "Python/9",
+      "fixed_solution": "def rolling_max(numbers):\n    if not numbers:\n        return []\n    running_max = numbers[0]\n    result = [running_max]\n    for n in numbers[1:]:\n        if n > running_max:\n            running_max = n\n        result.append(running_max)\n    return result",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 2.4377901554107666
+    },
+    {
+      "task_id": "Python/115",
+      "fixed_solution": "import math\n\ndef max_fill(grid, capacity):\n    # Calculate the sum of the maximum possible values from each subarray\n    total_sum = 0\n    for arr in grid:\n        max_subarray_sum = max(sum(subarray) for subarray in arr)\n        total_sum += max_subarray_sum\n    return math.floor(total_sum / capacity)",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp6mxgta9u.py\", line 25, in <module>\n    check(max_fill)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp6mxgta9u.py\", line 16, in check\n    assert max_fill([[0,0,1,0], [0,1,0,0], [1,1,1,1]], 1) == 6, \"Error\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp6mxgta9u.py\", line 7, in max_fill\n    max_subarray_sum = max(sum(sub",
+      "execution_time": 19.83792495727539
+    },
+    {
+      "task_id": "Python/38",
+      "fixed_solution": "def decode_cyclic(s):\n    # Proper cyclic shift decoder\n    # For example, 'a' -> 'z', 'z' -> 'a', etc.\n    # This is a simple implementation for demonstration\n    return s[-1] + s[:-1]",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp5n7k220h.py\", line 22, in <module>\n    check(decode_cyclic)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp5n7k220h.py\", line 19, in check\n    encoded_str = encode_cyclic(str)\n                  ^^^^^^^^^^^^^\nNameError: name 'encode_cyclic' is not defined. Did you mean: 'decode_cyclic'?\n",
+      "execution_time": 16.664583921432495
+    },
+    {
+      "task_id": "Python/147",
+      "fixed_solution": "def get_max_triples(n):\n    A = [i*i for i in range(1, n+1)]\n    ans = []\n    for i in range(n):\n        for j in range(i+1, n):\n            for k in range(j+1, n):\n                if (A[i] + A[j] + A[k]) % 3 == 0:\n                    ans.append((A[i], A[j], A[k]))\n    return len(ans)",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpcz3mxgjw.py\", line 18, in <module>\n    check(get_max_triples)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpcz3mxgjw.py\", line 13, in check\n    assert get_max_triples(5) == 1\n           ^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 16.335957050323486
+    },
+    {
+      "task_id": "Python/84",
+      "fixed_solution": "def solve(N):\n    return bin(N)[2:-1]",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpxyrbeqkb.py\", line 17, in <module>\n    check(solve)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpxyrbeqkb.py\", line 8, in check\n    assert solve(1000) == \"1\", \"Error\"\n           ^^^^^^^^^^^^^^^^^^\nAssertionError: Error\n",
+      "execution_time": 7.403246164321899
+    },
+    {
+      "task_id": "Python/100",
+      "fixed_solution": "def make_a_pile(n):\n    return [n + 2*i for i in range(n)]",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 3.9011311531066895
+    },
+    {
+      "task_id": "Python/85",
+      "fixed_solution": "def add(lst):\n    # Fixed implementation\n    return sum(num for num in lst if num % 2 == 0)",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpr6d8phoe.py\", line 15, in <module>\n    check(add)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpr6d8phoe.py\", line 8, in check\n    assert add([4, 88]) == 88\n           ^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 6.7823569774627686
+    },
+    {
+      "task_id": "Python/158",
+      "fixed_solution": "def find_max(numbers):\n    # Find the lexicographically smallest word in the list\n    min_word = numbers[0]\n    for word in numbers:\n        if word < min_word:\n            min_word = word\n    return min_word",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp1ilft5uc.py\", line 25, in <module>\n    check(find_max)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp1ilft5uc.py\", line 12, in check\n    assert (find_max([\"name\", \"of\", \"string\"]) == \"string\"), \"t1\"\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: t1\n",
+      "execution_time": 6.881036043167114
+    },
+    {
+      "task_id": "Python/59",
+      "fixed_solution": "def largest_prime_factor(n):\n    # Find the largest prime factor of n\n    def is_prime(k):\n        if k < 2:\n            return False\n        for i in range(2, int(k**0.5) + 1):\n            if k % i == 0:\n                return False\n        return True\n    \n    max_factor = 1\n    for j in range(2, n + 1):\n        if n % j == 0 and is_prime(j):\n            max_factor = max(max_factor, j)\n    return max_factor",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 12.756561994552612
+    },
+    {
+      "task_id": "Python/4",
+      "fixed_solution": "def mean_absolute_deviation(numbers):\n    mean = sum(numbers) / len(numbers)\n    return sum(abs(x - mean) for x in numbers) / len(numbers)",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 2.0009989738464355
+    },
+    {
+      "task_id": "Python/20",
+      "fixed_solution": "def find_closest_elements(numbers):\n    if not numbers:\n        return None  # Handle empty input\n    \n    closest_pair = None\n    minimum_distance = float('inf')\n    \n    for i in range(len(numbers)):\n        for j in range(len(numbers)):\n            if i != j:\n                current_distance = abs(numbers[i] - numbers[j])\n                if current_distance < minimum_distance:\n                    minimum_distance = current_distance\n                    closest_pair = tuple(sorted([numbers[i], numbers[j]]))\n    \n    return closest_pair",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 3.4997830390930176
+    },
+    {
+      "task_id": "Python/83",
+      "fixed_solution": "def starts_one_ends(n):\n    if n == 1:\n        return 1\n    return 18 * (10 ** (n - 2))",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 10.968256950378418
+    },
+    {
+      "task_id": "Python/6",
+      "fixed_solution": "def parse_paren_group(s):\n    depth = 0\n    max_depth = 0\n    for c in s:\n        if c == '(':\n            depth += 1\n            if depth > max_depth:\n                max_depth = depth\n        else:\n            depth -= 1\n    return max_depth",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpwkmvgl2q.py\", line 23, in <module>\n    check(parse_nested_parens)\n          ^^^^^^^^^^^^^^^^^^^\nNameError: name 'parse_nested_parens' is not defined\n",
+      "execution_time": 9.558680772781372
+    },
+    {
+      "task_id": "Python/48",
+      "fixed_solution": "def is_palindrome(text):\n    left = 0\n    right = len(text) - 1\n    while left < right:\n        if text[left] != text[right]:\n            return False\n        left += 1\n        right -= 1\n    return True",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 2.2867722511291504
+    },
+    {
+      "task_id": "Python/65",
+      "fixed_solution": "def circular_shift(x, shift):\n    s = str(x)\n    length = len(s)\n    if shift > length:\n        return s[::-1]\n    else:\n        return s[-shift:] + s[:-shift]",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 12.702838897705078
+    },
+    {
+      "task_id": "Python/143",
+      "fixed_solution": "def words_in_sentence(sentence):\n    new_lst = []\n    for word in sentence.split():\n        length = len(word)\n        if length == 1 or length == 2:\n            new_lst.append(word)\n        else:\n            flg = 0\n            for i in range(2, int(length**0.5) + 1):\n                if length % i == 0:\n                    flg = 1\n                    break\n            if flg == 0:\n                new_lst.append(word)\n    return \" \".join(new_lst)",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpphxc3se0.py\", line 30, in <module>\n    check(words_in_sentence)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpphxc3se0.py\", line 20, in check\n    assert words_in_sentence(\"This is a test\") == \"is\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 12.077839851379395
+    },
+    {
+      "task_id": "Python/54",
+      "fixed_solution": "def same_chars(s0, s1):\n    # Check if s1 is at least as long as s0\n    if len(s1) < len(s0):\n        return False\n    \n    # Check if s0 is a subsequence of s1\n    i = 0  # Pointer for s0\n    for char in s1:\n        if i < len(s0) and char == s0[i]:\n            i += 1\n    return i == len(s0)",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpu5wtmovn.py\", line 27, in <module>\n    check(same_chars)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpu5wtmovn.py\", line 19, in check\n    assert same_chars('eabcdzzzz', 'dddzzzzzzzddeddabc') == True\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 12.674715995788574
+    },
+    {
+      "task_id": "Python/21",
+      "fixed_solution": "def rescale_to_unit(numbers):\n    min_number = min(numbers)\n    max_number = max(numbers)\n    return [(x - min_number) / (max_number - min_number) for x in numbers]",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 2.716475248336792
+    },
+    {
+      "task_id": "Python/86",
+      "fixed_solution": "def anti_shuffle(s):\n    # Sort the characters in the string\n    return ''.join(sorted(s))",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpg59kteo2.py\", line 18, in <module>\n    check(anti_shuffle)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpg59kteo2.py\", line 12, in check\n    assert anti_shuffle('Hello World!!!') == 'Hello !!!Wdlor'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 5.564275026321411
+    },
+    {
+      "task_id": "Python/36",
+      "fixed_solution": "def fizz_buzz(n):\n    ns = []\n    for i in range(n):\n        if i % 11 == 0 and i % 13 == 0:\n            ns.append(i)\n    s = ''.join(list(map(str, ns)))\n    ans = 0\n    for c in s:\n        if c == '7':\n            ans += 1\n    return ans",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp2vrflmv1.py\", line 28, in <module>\n    check(fizz_buzz)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp2vrflmv1.py\", line 20, in check\n    assert fizz_buzz(78) == 2\n           ^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 13.033513069152832
+    },
+    {
+      "task_id": "Python/58",
+      "fixed_solution": "def common(l1, l2):\n    ret = set()\n    for e2 in l2:\n        for e1 in l1:\n            if e1 == e2:\n                ret.add(e2)\n    return sorted(ret)",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 3.1615071296691895
+    },
+    {
+      "task_id": "Python/140",
+      "fixed_solution": "def fix_spaces(text):\n    new_text = []\n    i = 0\n    start = 0\n    while i < len(text):\n        if text[i] == \" \":\n            # Track the start of a space sequence\n            if i == start:\n                start = i\n            end = i\n            while i < len(text) and text[i] == \" \":\n                i += 1\n            # Determine replacement\n            if end - start > 2:\n                new_text.append(\"-\")\n            elif end - start > 0:\n                new_text.append(\"_\" * (end - start))\n            else:\n                new_text.append(text[i])\n            start = i\n        else:\n            new_text.append(text[i])\n            start = i\n        i += 1\n    # Handle remaining characters\n    if end - start > 2:\n        new_text.append(\"-\")\n    elif end - start > 0:\n        new_text.append(\"_\" * (end - start))\n    return \"\".join(new_text)",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpjmy2wj6o.py\", line 43, in <module>\n    check(fix_spaces)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpjmy2wj6o.py\", line 35, in check\n    assert fix_spaces(\"Example\") == \"Example\", \"This prints if this assert fails 1 (good for debugging!)\"\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpjmy2wj6o.py\", line 26, in fix_spaces\n    if end - start >",
+      "execution_time": 18.481271028518677
+    },
+    {
+      "task_id": "Python/80",
+      "fixed_solution": "def is_happy(s):\n    if len(s) < 3:\n        return False\n    for i in range(len(s) - 2):\n        if s[i] == s[i+1] and s[i+1] == s[i+2]:\n            return False\n    return True",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpqh674vev.py\", line 21, in <module>\n    check(is_happy)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpqh674vev.py\", line 15, in check\n    assert is_happy(\"aabb\") == False , \"aabb\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: aabb\n",
+      "execution_time": 18.77123212814331
+    },
+    {
+      "task_id": "Python/52",
+      "fixed_solution": "def below_threshold(l, t):\n    for e in l:\n        if e >= t:\n            return False\n    return True",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 3.9770500659942627
+    },
+    {
+      "task_id": "Python/129",
+      "fixed_solution": "def minPath(grid, k):\n    n = len(grid)\n    # Find the minimum value in each cell\n    min_vals = []\n    for i in range(n):\n        min_vals.append(min(grid[i]))\n    \n    # Build the result\n    ans = []\n    for i in range(k):\n        if i % 2 == 0:\n            ans.append(1)\n        else:\n            ans.append(min_vals[i // 2])\n    return ans",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp0qtqo2y1.py\", line 35, in <module>\n    check(minPath)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp0qtqo2y1.py\", line 21, in check\n    assert minPath([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 3) == [1, 2, 1]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 14.354696035385132
+    },
+    {
+      "task_id": "Python/139",
+      "fixed_solution": "def special_factorial(n):\n    fact_i = 1\n    special_fact = 1\n    for i in range(1, n + 1):\n        fact_i *= i\n        special_fact *= fact_i\n    return special_fact",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 2.454336166381836
+    },
+    {
+      "task_id": "Python/67",
+      "fixed_solution": "def fruit_distribution(s, n):\n    # Extract apples and oranges from the string\n    parts = s.split()\n    apples = int(parts[0])\n    oranges = int(parts[3])\n    \n    # Total fruits distributed\n    total_fruits = apples + oranges\n    \n    # Remaining fruits\n    return n - total_fruits",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 7.23019003868103
+    },
+    {
+      "task_id": "Python/94",
+      "fixed_solution": "def isPrime(n):\n    if n < 2:\n        return False\n    if n == 2:\n        return True\n    if n % 2 == 0:\n        return False\n    for i in range(3, int(n**0.5) + 1, 2):\n        if n % i == 0:\n            return False\n    return True",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp674w0e0m.py\", line 37, in <module>\n    check(skjkasdkd)\n          ^^^^^^^^^\nNameError: name 'skjkasdkd' is not defined\n",
+      "execution_time": 10.464141845703125
+    },
+    {
+      "task_id": "Python/11",
+      "fixed_solution": "def xor(i, j):\n    if i == j:\n        return '0'\n    else:\n        return '1'",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpyua10uam.py\", line 17, in <module>\n    check(string_xor)\n          ^^^^^^^^^^\nNameError: name 'string_xor' is not defined\n",
+      "execution_time": 17.767369985580444
+    },
+    {
+      "task_id": "Python/88",
+      "fixed_solution": "def sort_array(array):\n    # Sort the array in ascending order\n    sorted_array = sorted(array)\n    # Check if the sum of first and last elements is odd\n    if (array[0] + array[-1]) % 2 != 0:\n        # Reverse the array if the sum is odd\n        return sorted_array[::-1]\n    else:\n        # Keep the array as is if the sum is even\n        return sorted_array",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpp1kv9dov.py\", line 27, in <module>\n    check(sort_array)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpp1kv9dov.py\", line 16, in check\n    assert sort_array([]) == [], \"Error\"\n           ^^^^^^^^^^^^^^\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpp1kv9dov.py\", line 5, in sort_array\n    if (array[0] + array[-1]) % 2 != 0:\n        ~~~~~^^^\nIndexError: list index out of range\n",
+      "execution_time": 15.417144060134888
+    },
+    {
+      "task_id": "Python/87",
+      "fixed_solution": "def get_row(lst, x):\n    coords = [(j, i) for i in range(len(lst)) for j in range(len(lst[i])) if lst[i][j] == x]\n    return sorted(coords, key=lambda x: (-x[1], x[0]))",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpg2qzh51g.py\", line 37, in <module>\n    check(get_row)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpg2qzh51g.py\", line 8, in check\n    assert get_row([\n           ^^^^^^^^^\nAssertionError\n",
+      "execution_time": 13.041163921356201
+    },
+    {
+      "task_id": "Python/25",
+      "fixed_solution": "import math\n\ndef factorize(n):\n    fact = []\n    i = 1\n    while i <= int(math.sqrt(n)):\n        if n % i == 0:\n            fact.append(i)\n            # Divide n by i as many times as possible\n            while n % i == 0:\n                n //= i\n        i += 1\n    # If n is greater than 1, it's a prime factor\n    if n > 1:\n        fact.append(n)\n    return fact",
+      "passed": false,
+      "error_message": "Execution timeout after 10 seconds",
+      "execution_time": 33.65113091468811
+    },
+    {
+      "task_id": "Python/132",
+      "fixed_solution": "def is_nested(string):\n    # Track indices of opening and closing brackets\n    opening_bracket_index = []\n    closing_bracket_index = []\n    \n    # First pass: record indices of all brackets\n    for i, char in enumerate(string):\n        if char == '(':\n            opening_bracket_index.append(i)\n        elif char == ')':\n            closing_bracket_index.append(i)\n    \n    # Second pass: check if brackets are properly nested\n    # We'll use a stack-like approach to track nesting\n    stack = []\n    for i, char in enumerate(string):\n        if char == '(':\n            stack.append(i)\n        elif char == ')':\n            if stack:\n                # Check if the closing bracket matches the most recent opening bracket\n                if i == closing_bracket_index[stack[-1]]:\n                    stack.pop()\n                else:\n                    # Unmatched closing bracket\n                    return False\n    \n    # After processing all characters, check if stack is empty\n    return len(stack) == 0",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpj30156_t.py\", line 51, in <module>\n    check(is_nested)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpj30156_t.py\", line 35, in check\n    assert is_nested('[]]]]]]][[[[[]') == False\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 18.501771926879883
+    },
+    {
+      "task_id": "Python/56",
+      "fixed_solution": "def correct_bracketing(brackets):\n    if not brackets:\n        return True\n    depth = 0\n    for b in brackets:\n        if b == \">\":\n            depth += 1\n        else:\n            depth -= 1\n        if depth < 0:\n            return False\n    return depth == 0",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp3pokm7jy.py\", line 33, in <module>\n    check(correct_bracketing)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp3pokm7jy.py\", line 20, in check\n    assert correct_bracketing(\"<>\")\n           ^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 10.790000915527344
+    },
+    {
+      "task_id": "Python/127",
+      "fixed_solution": "def is_prime(num):\n    if num == 1 or num == 0:\n        return False\n    if num == 2:\n        return True\n    for i in range(2, int(num**0.5) + 1):\n        if num % i == 0:\n            return False\n    return True\n\ndef intersection(interval1, interval2):\n    l = max(interval1[0], interval2[0])\n    r = min(interval1[1], interval2[1])\n    return \"YES\" if l < r else \"NO\"\n\ndef check(intersection):\n    # Check some simple cases\n    assert intersection((1, 2), (2, 3)) == \"NO\"\n    assert intersection((-1, 1), (0, 4)) == \"NO\"\n    assert intersection((-3, -1), (-5, 5)) == \"YES\"\n    assert intersection((-2, 2), (-4, 0)) == \"YES\"\n\n    # Check some edge cases that are easy to work out by hand.\n    assert intersection((-11, 2), (-1, -1)) == \"NO\"\n    assert intersection((1, 2), (3, 5)) == \"NO\"\n    assert intersection((1, 2), (1, 2)) == \"NO\"\n    assert intersection((-2, -2), (-3, -2)) == \"NO\"\n\ncheck(intersection)",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpll3tauh8.py\", line 29, in <module>\n    check(intersection)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpll3tauh8.py\", line 19, in check\n    assert intersection((-1, 1), (0, 4)) == \"NO\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 22.113817930221558
+    },
+    {
+      "task_id": "Python/142",
+      "fixed_solution": "def sum_squares(lst):\n    result = []\n    for i in range(len(lst)):\n        if i % 3 == 0:\n            result.append(lst[i]**2)\n        elif i % 3 != 0:\n            result.append(lst[i]**3)\n        else:\n            result.append(lst[i])\n    return sum(result)",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpng7gwm8m.py\", line 31, in <module>\n    check(sum_squares)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpng7gwm8m.py\", line 16, in check\n    assert sum_squares([1,2,3]) == 6\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 9.8505859375
+    },
+    {
+      "task_id": "Python/149",
+      "fixed_solution": "def sorted_list_sum(lst):\n    # Handle empty list case\n    if not lst:\n        return []\n    \n    # Initialize new_lst with the first element\n    new_lst = [lst[0]]\n    \n    # Iterate through the rest of the list\n    for num in lst[1:]:\n        if len(num) % 2 == 0:\n            new_lst.append(num)\n    \n    # Sort the new list alphabetically\n    new_lst.sort()\n    \n    return new_lst",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpryw39wmq.py\", line 32, in <module>\n    check(sorted_list_sum)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpryw39wmq.py\", line 24, in check\n    assert sorted_list_sum([\"d\", \"b\", \"c\", \"a\"]) == []\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 12.759418964385986
+    },
+    {
+      "task_id": "Python/107",
+      "fixed_solution": "def is_palindrome(n):\n    return str(n) == str(n)[::-1]\n\ndef even_odd_palindrome(n):\n    even_palindrome_count = 0\n    odd_palindrome_count = 0\n\n    for i in range(1, n + 1):\n        if i % 2 == 1 and is_palindrome(i):\n            odd_palindrome_count += 1\n        elif i % 2 == 0 and is_palindrome(i):\n            even_palindrome_count += 1\n    return (even_palindrome_count, odd_palindrome_count)",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 3.8909430503845215
+    },
+    {
+      "task_id": "Python/98",
+      "fixed_solution": "def count_upper(s):\n    count = 0\n    for char in s:\n        if char in \"AEIOU\":\n            count += 1\n    return count",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpdi5yl9zn.py\", line 22, in <module>\n    check(count_upper)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpdi5yl9zn.py\", line 13, in check\n    assert count_upper('dBBE') == 0\n           ^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 6.9904210567474365
+    },
+    {
+      "task_id": "Python/131",
+      "fixed_solution": "def digits(n):\n    product = 1\n    odd_count = 0\n    for digit in str(n):\n        int_digit = int(digit)\n        if int_digit % 2 == 1:\n            product *= int_digit\n            odd_count += 1\n    if odd_count == 0:\n        return 0\n    else:\n        return product",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 2.9224698543548584
+    },
+    {
+      "task_id": "Python/7",
+      "fixed_solution": "def filter_by_substring(strings, substring):\n    # Fixed implementation\n    return [x for x in strings if substring in x]",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 2.2024118900299072
+    },
+    {
+      "task_id": "Python/114",
+      "fixed_solution": "def minSubArraySum(nums):\n    if not nums:\n        return 0  # Handle empty list case\n    \n    max_sum = current_sum = nums[0]\n    min_sum = current_sum\n    \n    for num in nums[1:]:\n        current_sum = min(num, current_sum + num)\n        max_sum = max(max_sum, current_sum)\n        min_sum = min(min_sum, current_sum)\n    \n    return min_sum",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 8.861228942871094
+    },
+    {
+      "task_id": "Python/51",
+      "fixed_solution": "def remove_vowels(text):\n    # Filter out vowels (case-insensitive)\n    return \"\".join([s for s in text if s.lower() not in [\"a\", \"e\", \"i\", \"o\", \"u\", \"w\", \"y\"]])",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp4qdlhlax.py\", line 19, in <module>\n    check(remove_vowels)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmp4qdlhlax.py\", line 17, in check\n    assert remove_vowels('ybcd') == 'ybcd'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 14.115903854370117
+    },
+    {
+      "task_id": "Python/66",
+      "fixed_solution": "def digitSum(s):\n    # Fixed implementation\n    return sum(ord(char) for char in s if char.islower())",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpotnt86c_.py\", line 21, in <module>\n    check(digitSum)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpotnt86c_.py\", line 10, in check\n    assert digitSum(\"abAB\") == 131, \"Error\"\n           ^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Error\n",
+      "execution_time": 11.568987131118774
+    },
+    {
+      "task_id": "Python/106",
+      "fixed_solution": "def f(n):\n    ret = []\n    for i in range(1, n + 1):\n        if i % 2 == 0:\n            # Compute i^i\n            x = 1\n            for j in range(1, i + 1):\n                x *= i\n            ret.append(x)\n        else:\n            # Compute sum of first i natural numbers\n            x = 0\n            for j in range(1, i + 1):\n                x += j\n            ret.append(x)\n    return ret",
+      "passed": false,
+      "error_message": "Tests failed: Traceback (most recent call last):\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpkamtiebv.py\", line 25, in <module>\n    check(f)\n  File \"/var/folders/gn/5733gyrj0jj4mcls2dq2wscc0000gn/T/tmpkamtiebv.py\", line 20, in check\n    assert f(5) == [1, 2, 6, 24, 15]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "execution_time": 12.080979347229004
+    },
+    {
+      "task_id": "Python/10",
+      "fixed_solution": "def make_palindrome(s):\n    # Define a helper function to check if a string is a palindrome\n    def is_palindrome(string):\n        return string == string[::-1]\n    \n    # Find the smallest index where the suffix is a palindrome\n    beginning_of_suffix = 0\n    while not is_palindrome(s[beginning_of_suffix:]):\n        beginning_of_suffix += 1\n    \n    # Return the original string plus the reversed suffix\n    return s + s[:beginning_of_suffix][::-1]",
+      "passed": true,
+      "error_message": null,
+      "execution_time": 3.4392027854919434
+    }
+  ]
+}
