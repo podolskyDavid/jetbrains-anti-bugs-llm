@@ -348,6 +348,7 @@ dependencies = [
     { name = "httpx" },
     { name = "langchain" },
     { name = "langchain-core" },
+    { name = "langchain-ollama" },
     { name = "langgraph" },
     { name = "ollama" },
     { name = "pydantic" },
@@ -365,14 +366,15 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
-    { name = "datasets", specifier = ">=2.19.0" },
-    { name = "httpx", specifier = ">=0.27.0" },
-    { name = "langchain", specifier = ">=0.3.0" },
-    { name = "langchain-core", specifier = ">=0.3.0" },
-    { name = "langgraph", specifier = ">=0.2.0" },
+    { name = "datasets", specifier = ">=4.4.0" },
+    { name = "httpx", specifier = ">=0.28.0" },
+    { name = "langchain", specifier = ">=1.0.0" },
+    { name = "langchain-core", specifier = ">=1.0.0" },
+    { name = "langchain-ollama", specifier = ">=1.0.0" },
+    { name = "langgraph", specifier = ">=1.0.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10.0" },
-    { name = "ollama", specifier = ">=0.3.0" },
-    { name = "pydantic", specifier = ">=2.8.0" },
+    { name = "ollama", specifier = ">=0.6.0" },
+    { name = "pydantic", specifier = ">=2.12.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4.0" },
@@ -433,6 +435,19 @@ wheels = [
 ]
 
 [[package]]
+name = "langchain-ollama"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "langchain-core" },
+    { name = "ollama" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8b/45/d996b4c0e3e7155ff7a110bf24dcb5043fc1405559a2089c11fe97511cc2/langchain_ollama-1.0.0.tar.gz", hash = "sha256:2ea9ad1b0f0ab319d600b9193d1124a8925523a3b943d75a967718e24ec09a8a", size = 151042 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/91/08/7be292aee722692b13a93316247b57eefb83d4309f5fdfe636cc47786efe/langchain_ollama-1.0.0-py3-none-any.whl", hash = "sha256:5828523fcbd137847490841110a6aedf96b68534e7fe2735715ecf3e835b2391", size = 29006 },
+]
+
+[[package]]
 name = "langgraph"
 version = "1.0.2"
 source = { registry = "https://pypi.org/simple" }
@@ -490,7 +505,7 @@ wheels = [
 
 [[package]]
 name = "langsmith"
-version = "0.4.41"
+version = "0.4.42"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -501,9 +516,9 @@ dependencies = [
     { name = "requests-toolbelt" },
     { name = "zstandard" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/dc/7d/5c658251230b233958cbf8be46600254d6248613081d670dc7fe9b241778/langsmith-0.4.41.tar.gz", hash = "sha256:b88d03bb157cf69d1afee250a658d847003babbbd9647f720edcc9b03a0857cd", size = 949854 }
+sdist = { url = "https://files.pythonhosted.org/packages/c8/91/939cb2fa0317a8aedd0b4dab6c189722e5ef15abcf65304dc929e582826a/langsmith-0.4.42.tar.gz", hash = "sha256:a6e808e47581403cb019b47c8c10627c1644f78ed4c03fa877d6ad661476c38f", size = 953877 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/98/4c/6c0c338ca7182e4ecb7af61049415e7b3513cc6cea9aa5bf8ca508f53539/langsmith-0.4.41-py3-none-any.whl", hash = "sha256:5cdc554e5f0361bf791fdd5e8dea16d5ba9dfce09b3b8f8bba5e99450c569b27", size = 399279 },
+    { url = "https://files.pythonhosted.org/packages/0f/17/4280bc381b40a642ea5efe1bab0237f03507a9d4281484c5baa1db82055a/langsmith-0.4.42-py3-none-any.whl", hash = "sha256:015b0a0c17eb1a61293e8cbb7d41778a4b37caddd267d54274ba94e4721b301b", size = 401937 },
 ]
 
 [[package]]

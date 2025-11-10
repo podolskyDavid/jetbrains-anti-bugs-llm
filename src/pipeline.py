@@ -1,36 +1,20 @@
-"""
-Pipeline for evaluating LLM agent on HumanEvalFix benchmark.
-"""
-
 import time
+import os
 import sys
+import json
 import traceback
 from io import StringIO
 from typing import Optional
 from contextlib import redirect_stdout, redirect_stderr
 
-from models import ProblemInput, ProblemOutput, BenchmarkResult
-from agent import fix_code
-
-
-def get_agent_result(problem: ProblemInput) -> str:
-    """
-    Call the agent to fix the buggy code.
-    
-    Args:
-        problem: The problem input containing buggy code and context
-        
-    Returns:
-        The fixed code as a string
-    """
-    return fix_code(problem)
+from models import ProblemData, AgentInput, ProblemOutput, BenchmarkResult
+from agent import fix_code_agent
 
 
 def execute_code_with_tests(
     code: str,
     test_code: str,
     entry_point: str,
-    timeout: float = 5.0
 ) -> tuple[bool, Optional[str]]:
     """
     Execute the fixed code with test cases in a sandboxed environment.
@@ -87,12 +71,12 @@ def execute_code_with_tests(
         return False, error_msg
 
 
-def evaluate_single_problem(problem: ProblemInput, verbose: bool = True) -> ProblemOutput:
+def evaluate_single_problem(problem: ProblemData, verbose: bool = True, enable_thinking: bool = False) -> ProblemOutput:
     """
     Evaluate a single problem: get agent's fix and test it.
     
     Args:
-        problem: Input problem data
+        problem: Input problem data (ProblemData from dataset)
         verbose: Whether to print debug output
         
     Returns:
@@ -102,17 +86,18 @@ def evaluate_single_problem(problem: ProblemInput, verbose: bool = True) -> Prob
     
     try:
         # Get the agent's fixed solution (will print streaming output in debug mode)
-        fixed_solution = get_agent_result(problem)
+        
+        fixed_solution: str = fix_code_agent(problem.to_agent_input(), enable_thinking=enable_thinking, verbose=verbose, bug_type=problem.bug_type)
         
         # Execute and test the fixed code
         if verbose:
-            print("++++ TESTING FIXED CODE ++++")
+            print(f"\n{'='*80}")
+            print(f"+++ TESTING FIXED CODE +++")
         
         passed, error_message = execute_code_with_tests(
             code=fixed_solution,
             test_code=problem.test,
             entry_point=problem.entry_point,
-            timeout=5.0
         )
         
         execution_time = time.time() - start_time
@@ -122,7 +107,7 @@ def evaluate_single_problem(problem: ProblemInput, verbose: bool = True) -> Prob
             if passed:
                 print(f"+++ TEST PASSED (time: {execution_time:.2f}s)")
             else:
-                print(f"X TEST FAILED (time: {execution_time:.2f}s)")
+                print(f"!!! TEST FAILED (time: {execution_time:.2f}s)")
                 print(f"\n!!! ERROR MESSAGE:")
                 print(error_message)
             print(f"\n{'='*80}\n")
@@ -141,7 +126,7 @@ def evaluate_single_problem(problem: ProblemInput, verbose: bool = True) -> Prob
         error_msg = f"Pipeline error: {str(e)}\n{traceback.format_exc()}"
         
         if verbose:
-            print(f"💥 PIPELINE ERROR:")
+            print(f"!!! PIPELINE ERROR:")
             print(error_msg)
             print(f"\n{'='*80}\n")
         
@@ -157,7 +142,8 @@ def evaluate_single_problem(problem: ProblemInput, verbose: bool = True) -> Prob
 def run_benchmark(
     dataset,
     max_problems: Optional[int] = None,
-    verbose: bool = True
+    verbose: bool = True,
+    enable_thinking: bool = False
 ) -> BenchmarkResult:
     """
     Main benchmark loop: iterate through problems and evaluate each one.
@@ -183,22 +169,30 @@ def run_benchmark(
     
     if verbose:
         print(f"Starting benchmark evaluation on {num_problems} problems...")
-        print("-" * 80)
+        print(f"{'='*80}")
     
     for idx, row in enumerate(dataset):
         if max_problems is not None and idx >= max_problems:
             break
             
-        # Convert dataset row to ProblemInput
-        problem = ProblemInput(
+        # Convert dataset row to ProblemData
+        problem = ProblemData(
             task_id=row.get('task_id', f'problem_{idx}'),
             prompt=row['prompt'],
             buggy_solution=row['buggy_solution'],
             canonical_solution=row['canonical_solution'],
             test=row['test'],
             entry_point=row['entry_point'],
+
+            import_=row.get('import'),
+            test_setup=row.get('test_setup'),
+
             declaration=row.get('declaration'),
             bug_type=row.get('bug_type'),
+            failure_symptoms=row.get('failure_symptoms'),
+            signature=row.get('signature'),
+            docstring=row.get('docstring'),
+            instruction=row.get('instruction'),
             example_test=row.get('example_test')
         )
         
@@ -206,7 +200,7 @@ def run_benchmark(
             print(f"\n[{idx + 1}/{num_problems}] Evaluating problem: {problem.task_id}")
         
         # Evaluate the problem
-        result = evaluate_single_problem(problem, verbose=verbose)
+        result = evaluate_single_problem(problem, verbose=verbose, enable_thinking=enable_thinking)
         benchmark_result.add_result(result)
         
         if verbose and (idx + 1) % 10 == 0:
@@ -236,8 +230,7 @@ def save_results(result: BenchmarkResult, output_path: str):
         result: BenchmarkResult to save
         output_path: Path to output JSON file
     """
-    import json
-    
+
     with open(output_path, 'w') as f:
         json.dump(result.model_dump(), f, indent=2)
     

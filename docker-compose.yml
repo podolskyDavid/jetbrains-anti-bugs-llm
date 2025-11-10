@@ -10,20 +10,56 @@ services:
       - OLLAMA_HOST=0.0.0.0
       - OLLAMA_NUM_PARALLEL=4
       - OLLAMA_MAX_LOADED_MODELS=1
+      - OLLAMA_NUM_CTX=12000
     restart: unless-stopped
     entrypoint: ["/bin/sh", "-c"]
     command: >
       "ollama serve &
        sleep 10 &&
-       ollama pull hf.co/unsloth/Qwen3-1.7B-GGUF:UD-Q4_K_XL &&
+       ollama pull hf.co/unsloth/Qwen3-1.7B-GGUF:UD-Q8_K_XL &&
        wait"
     deploy:
       resources:
         limits:
-          cpus: '8'        # Increase for better performance
+          cpus: '8'
           memory: 6G
         reservations:
           cpus: '4'
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  benchmark:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jetbrains-benchmark
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=hf.co/unsloth/Qwen3-1.7B-GGUF:UD-Q8_K_XL
+      - ENABLE_THINKING=false
+    volumes:
+      # Mount source code for development
+      - ./src:/app/src:ro
+      # Mount output directory for results
+      - ./results:/app/results
+    # Override command via docker-compose run
+    # Example: docker-compose run benchmark python src/run_benchmark.py --partial 10
+    command: python src/run_benchmark.py --partial 10 --debug
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '2'
           memory: 2G
 
 volumes:
