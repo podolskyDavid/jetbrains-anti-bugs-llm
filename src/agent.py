@@ -1,13 +1,18 @@
 import os
 import re
+import subprocess
+import tempfile
 from models import AgentInput
-from typing import Literal, TypedDict
+from typing import Literal, TypedDict, Optional
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 
 # Configuration
 MODEL_NAME = os.getenv('OLLAMA_MODEL', 'hf.co/unsloth/Qwen3-1.7B-GGUF:UD-Q8_K_XL')
 OLLAMA_HOST = os.getenv('OLLAMA_HOST', 'http://localhost:11434')
+MAX_ITERATIONS = 3
+TEST_TIMEOUT = 30
+
 
 def get_thinking_directive(enable_thinking: bool) -> str:
     """Get the thinking mode directive for Qwen3 prompts."""
@@ -36,28 +41,141 @@ def get_llm_params(enable_thinking: bool) -> dict:
 
 
 class AgentState(TypedDict):
-    """State for the LangGraph agent."""
+    """State for the ReAct agent."""
     buggy_solution: str
     test: str
+    entry_point: str
+    iteration: int
     fixed_solution: str
+    last_fix_attempt: str
+    test_result: Optional[str]
+    test_passed: bool
 
 
-def extract_code(text: str) -> str:
-    """Extract Python code from LLM response, handling various formats."""
-    # Try to find code in markdown blocks
-    code_block_pattern = r'```(?:python)?\s*\n(.*?)\n```'
-    matches = re.findall(code_block_pattern, text, re.DOTALL)
-    if matches:
-        return matches[0].strip()
+def extract_function_name(code: str) -> Optional[str]:
+    """Extract function name from Python code."""
+    match = re.search(r'def\s+(\w+)\s*\(', code)
+    return match.group(1) if match else None
+
+
+def run_code_tests(code: str, test: str, entry_point: str, timeout: int = TEST_TIMEOUT) -> tuple[bool, str]:
+    """
+    Run tests on code in sandboxed environment.
+    Returns (passed: bool, message: str)
+    """
+    # Combine code and tests
+    full_code = f"{code}\n\n{test}"
     
-    # If no markdown blocks, return the whole response stripped
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(full_code)
+            temp_file = f.name
+        
+        # Run in subprocess with timeout
+        result = subprocess.run(
+            ['python', temp_file],
+            capture_output=True,
+            text=True,
+            timeout=timeout
+        )
+        
+        os.unlink(temp_file)
+        
+        if result.returncode == 0:
+            return True, "All tests passed"
+        else:
+            error_msg = result.stderr or result.stdout or "Unknown error"
+            return False, f"Tests failed: {error_msg[:500]}"
+            
+    except subprocess.TimeoutExpired:
+        return False, f"Execution timeout after {timeout} seconds"
+    except Exception as e:
+        return False, f"Execution error: {str(e)}"
+
+
+def extract_code_block(text: str) -> str:
+    """Extract Python code from LLM response."""
+    # Try to find code in markdown blocks
+    code_block_pattern = r'```python\s*(.*?)\s*```'
+    matches = re.findall(code_block_pattern, text, re.DOTALL | re.IGNORECASE)
+    if matches:
+        return matches[-1].strip()  # Take last block
+    
+    # If no markdown blocks, try to extract function definition
+    lines = text.split('\n')
+    code_lines = []
+    in_function = False
+    
+    for line in lines:
+        if line.strip().startswith('def '):
+            in_function = True
+        if in_function:
+            code_lines.append(line)
+    
+    if code_lines:
+        return '\n'.join(code_lines).strip()
+    
     return text.strip()
 
 
-def create_fix_code_graph(enable_thinking: bool, verbose: bool = False) -> StateGraph:
-    """Create a simple LangGraph for fixing buggy code."""
+FEW_SHOT_EXAMPLES = """
+EXAMPLE 1:
+Buggy Code:
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, n):
+        if n % i == 0:
+            return False
+    return True
+
+Issue: Inefficient loop, checking all numbers up to n.
+Fixed Code:
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+EXAMPLE 2:
+Buggy Code:
+def factorial(n):
+    if n == 0:
+        return 1
+    return n * factorial(n + 1)
+
+Issue: Wrong recursive call (n+1 instead of n-1), causes infinite recursion.
+Fixed Code:
+def factorial(n):
+    if n == 0:
+        return 1
+    return n * factorial(n - 1)
+
+EXAMPLE 3:
+Buggy Code:
+def find_max(numbers):
+    max_val = 0
+    for num in numbers:
+        if num > max_val:
+            max_val = num
+    return max_val
+
+Issue: Initializing max_val to 0 fails for all-negative lists.
+Fixed Code:
+def find_max(numbers):
+    max_val = numbers[0]
+    for num in numbers:
+        if num > max_val:
+            max_val = num
+    return max_val
+"""
+
+
+def create_react_graph(enable_thinking: bool, verbose: bool = False) -> StateGraph:
+    """Create a ReAct-style LangGraph for fixing buggy code."""
     
-    # Initialize LLM
     llm_params = get_llm_params(enable_thinking)
     llm = ChatOllama(
         model=MODEL_NAME,
@@ -65,52 +183,73 @@ def create_fix_code_graph(enable_thinking: bool, verbose: bool = False) -> State
         **llm_params
     )
     
-    def fix_code_node(state: AgentState) -> AgentState:
-        """Node that calls LLM to fix the buggy code."""
+    def analyze_and_fix_node(state: AgentState) -> AgentState:
+        """ReAct: Thought + Action (generate fix)."""
         thinking_directive = get_thinking_directive(enable_thinking)
+        iteration = state['iteration']
         
-        prompt = f"""You are an expert Python debugger working on fixing buggy production Python code. Your job is to apply the *smallest possible textual change* that makes all provided tests pass.
+        # Build context from previous attempts
+        context = ""
+        if iteration > 0 and state.get('test_result'):
+            context = f"""
+PREVIOUS ATTEMPT FAILED:
+{state['last_fix_attempt']}
 
-CONTEXT
--------
-You will be given buggy Python code and the tests that must pass.
+TEST RESULT:
+{state['test_result']}
 
-BUGGY CODE:
+Analyze what went wrong and generate an improved fix.
+"""
+        
+        # Adjust output instructions based on thinking mode
+        if enable_thinking:
+            output_instruction = """Output format:
+```python
+def {entry_point}(...):
+    # fixed implementation
+    pass
+```
+
+No explanations, just the code."""
+        else:
+            output_instruction = """Output format:
+**Reasoning:**
+[Brief explanation of the bug and your fix]
+
+**Final Answer**
+```python
+def {entry_point}(...):
+    # fixed implementation
+    pass
+```"""
+        
+        prompt = f"""You are an expert Python debugger. Fix the buggy code to pass all tests.
+
+{FEW_SHOT_EXAMPLES}
+
+CURRENT TASK:
+
+Buggy Code:
 {state['buggy_solution']}
 
-TEST CASES (must all pass):
+Tests (must all pass):
 {state['test']}
 
-OBJECTIVE
----------
-Produce a *minimal* fix that makes **all** tests pass while preserving the original API and structure.
+{context}
 
-HARD RULES (follow all)
------------------------
-1) Preserve the function **name**, **parameters**, and **return type** exactly as in the buggy code.
-2) Do **not** add or remove top-level code: no new imports, no print/logging/asserts, no new helper functions, no I/O, no globals.
-3) Make the **fewest token-level edits** required (flip a comparator, add `abs`, fix index/variable, off-by-one, integer vs float division, base case, fencepost).
-4) If multiple fixes work, prefer the **smallest textual edit**. Priority: (1) pass tests, (2) match docstring/spec if present, (3) preserve style, (4) minimize diff.
-5) Deterministic output: no comments, docstrings, explanations, extra whitespace churn, or refactors.
+INSTRUCTIONS:
+1. Analyze the bug carefully
+2. Generate a complete fixed function
+3. Preserve the original function name: {state['entry_point']}
+4. Make minimal changes - only fix what's broken
 
-OUTPUT SPEC (very strict)
--------------------------
-- You must output **exactly one** fenced Python code block containing the **complete fixed function**, surrounded by these sentinels:
-__BEGIN_FIXED_CODE__
-```python
-# fixed function here
-```
-__END_FIXED_CODE__
-- Do **not** include any other backtick fences anywhere.
-- No text before or after the sentinels.
-
-Remember: smallest edit that makes all tests pass. Now produce the result.{thinking_directive}"""
-
+{output_instruction.format(entry_point=state['entry_point'])}{thinking_directive}"""
         
-        if verbose:
-            print("+++ LLM RESPONSE (streaming) +++\n")
+        if verbose and iteration == 0:
+            print("+++ REACT ITERATION 1: ANALYZE AND FIX +++\n")
+        elif verbose:
+            print(f"+++ REACT ITERATION {iteration + 1}: REFINE FIX +++\n")
         
-        # Stream the response and accumulate chunks
         full_response = ""
         for chunk in llm.stream(prompt):
             if hasattr(chunk, 'content'):
@@ -122,25 +261,83 @@ Remember: smallest edit that makes all tests pass. Now produce the result.{think
         if verbose:
             print("\n")
         
-        fixed_code = extract_code(full_response)
+        fixed_code = extract_code_block(full_response)
         
-        return {"fixed_solution": fixed_code}
+        return {
+            "last_fix_attempt": fixed_code,
+            "iteration": iteration + 1
+        }
     
-    # Build graph
+    def test_code_node(state: AgentState) -> AgentState:
+        """ReAct: Observation - test the fix and observe results."""
+        if verbose:
+            print("+++ TESTING GENERATED FIX +++\n")
+        
+        passed, message = run_code_tests(
+            state['last_fix_attempt'],
+            state['test'],
+            state['entry_point']
+        )
+        
+        if verbose:
+            if passed:
+                print(f"Test Result: PASSED\n")
+            else:
+                print(f"Test Result: FAILED\n{message}\n")
+        
+        # +++ If tests pass, this is our fixed solution
+        # +++ If all attempts exhausted, return last attempt
+        return {
+            "test_passed": passed,
+            "test_result": message,
+            "fixed_solution": state['last_fix_attempt']
+        }
+    
+    def route_after_test(state: AgentState) -> Literal["analyze", "end"]:
+        """Route after observation: continue ReAct loop or end."""
+        # +++ Test passed - we're done!
+        if state['test_passed']:
+            return "end"
+        # +++ Max iterations reached - return best attempt
+        elif state['iteration'] >= MAX_ITERATIONS:
+            return "end"
+        # +++ Continue ReAct loop: back to Thought + Action
+        else:
+            return "analyze"
+    
+    # Build graph - Pure ReAct: Thought+Action → Observation → loop
     graph = StateGraph(AgentState)
-    graph.add_node("fix_code", fix_code_node)
-    graph.add_edge(START, "fix_code")
-    graph.add_edge("fix_code", END)
+    
+    # Add nodes
+    graph.add_node("analyze_and_fix", analyze_and_fix_node)
+    graph.add_node("test_code", test_code_node)
+    
+    # Add edges
+    graph.add_edge(START, "analyze_and_fix")
+    graph.add_edge("analyze_and_fix", "test_code")
+    graph.add_conditional_edges(
+        "test_code",
+        route_after_test,
+        {
+            "analyze": "analyze_and_fix",  # Continue ReAct loop
+            "end": END                      # Tests passed or max iterations
+        }
+    )
     
     return graph.compile()
 
 
-def fix_code_agent(agent_input: AgentInput, enable_thinking: bool, verbose: bool = False, bug_type: str = None) -> str:
+def fix_code_agent(
+    agent_input: AgentInput,
+    enable_thinking: bool,
+    verbose: bool = False,
+    bug_type: str = None
+) -> str:
     """
-    Main entry point: Fix buggy python code using LangGraph agent.
+    Main entry point: Fix buggy Python code using ReAct agent.
     
     Args:
-        agent_input: The agent input
+        agent_input: The agent input with buggy code and tests
         enable_thinking: Whether to enable thinking mode
         verbose: Whether to enable debug output
         bug_type: Bug type for debugging (optional)
@@ -161,16 +358,40 @@ def fix_code_agent(agent_input: AgentInput, enable_thinking: bool, verbose: bool
         print(f"{'-'*80}")
         print(f"{agent_input.test}")
         print(f"{'='*80}\n")
-
-    # Create and run the graph
-    graph = create_fix_code_graph(enable_thinking, verbose=verbose)
+    
+    # Extract entry point (function name) from test or buggy code
+    entry_point = agent_input.entry_point or extract_function_name(agent_input.buggy_solution)
+    if not entry_point:
+        # Try to extract from test
+        test_match = re.search(r'def\s+check\s*\(\s*(\w+)\s*\)', agent_input.test)
+        if test_match:
+            entry_point = test_match.group(1)
+        else:
+            entry_point = "unknown_function"
+    
+    # Create and run the ReAct graph
+    graph = create_react_graph(enable_thinking, verbose=verbose)
     
     initial_state: AgentState = {
         "buggy_solution": agent_input.buggy_solution,
         "test": agent_input.test,
-        "fixed_solution": ""
+        "entry_point": entry_point,
+        "iteration": 0,
+        "fixed_solution": "",
+        "last_fix_attempt": "",
+        "test_result": None,
+        "test_passed": False
     }
     
     result = graph.invoke(initial_state)
+    
+    if verbose:
+        print(f"\n{'='*80}")
+        if result['test_passed']:
+            print("+++ REACT AGENT SUCCEEDED - ALL TESTS PASSED +++")
+        else:
+            print(f"+++ REACT AGENT EXHAUSTED {MAX_ITERATIONS} ITERATIONS +++")
+            print("+++ Returning last attempt +++")
+        print(f"{'='*80}\n")
     
     return result["fixed_solution"]

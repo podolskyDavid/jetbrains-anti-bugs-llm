@@ -8,6 +8,8 @@ class AgentInput(BaseModel):
     # prompt: str  # not used in this implementation
     buggy_solution: str
     test: str  # supports a docs-only variant
+    entry_point: Optional[str] = Field(None, description="Function name to fix")
+
     model_config = ConfigDict(extra="forbid")
 
 class ProblemData(BaseModel):
