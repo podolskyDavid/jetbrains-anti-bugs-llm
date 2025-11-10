@@ -71,6 +71,10 @@ This strict input format ensures comparability with published HumanEvalFix bench
 ### Option 1: Docker Compose (Fully Isolated and works out of the box, but might be slower on apple m-chips)
 
 ```bash
+# Option A: Quick run with auto-cleanup (recommended)
+./run_benchmark.sh  # Runs benchmark and auto-stops all containers when done
+
+# Option B: Manual control
 # Start services (runs 10% of problems with debug output by default)
 docker-compose up --build
 
@@ -84,11 +88,19 @@ docker-compose run --rm benchmark python src/run_benchmark.py --full --debug
 # Run without debug output for faster execution
 docker-compose run --rm benchmark python src/run_benchmark.py --partial 10
 
+# Stop services
+docker-compose down
+```
+
+**Results Location:**
+Results are automatically saved to `results/benchmark_results.json` on your local machine (not inside the container). The `./results` directory is mounted as a volume, so all benchmark results persist on your computer even after containers are stopped/removed.
+
+```bash
 # View results
 cat results/benchmark_results.json
 
-# Stop services
-docker-compose down
+# Or pretty-print with jq
+cat results/benchmark_results.json | jq '.'
 ```
 
 **Configuration Options:**
@@ -135,13 +147,19 @@ python src/run_benchmark.py --full                    # All 164 problems
 # With debug output (shows LLM responses and detailed test results)
 python src/run_benchmark.py --partial 10 --debug
 
-# Enable thinking mode (slower but potentially more accurate and buggy)
+# NOT RECOMMENDED!!! Enable qwen3 thinking mode
 python src/run_benchmark.py --partial 10 --thinking --debug
 
-# Set thinking mode via environment variable
+# NOT RECOMMENDED!!! Set thinking mode via environment variable
 export ENABLE_THINKING=true
 python src/run_benchmark.py --partial 10 --debug
+
+# View results
+cat results/benchmark_results.json
 ```
+
+**Results Location:**
+All benchmark results are saved to `results/benchmark_results.json` in your project directory.
 
 **Notes:** 
 - The `--partial` option randomly samples problems from the dataset, so results may vary between runs with the same percentage.

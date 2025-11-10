@@ -1,11 +1,9 @@
 import time
 import os
-import sys
 import json
-import traceback
-from io import StringIO
+import tempfile
+import subprocess
 from typing import Optional
-from contextlib import redirect_stdout, redirect_stderr
 
 from models import ProblemData, AgentInput, ProblemOutput, BenchmarkResult
 from agent import fix_code_agent
@@ -15,60 +13,54 @@ def execute_code_with_tests(
     code: str,
     test_code: str,
     entry_point: str,
+    timeout: int = 10,
 ) -> tuple[bool, Optional[str]]:
     """
-    Execute the fixed code with test cases in a sandboxed environment.
+    Execute the fixed code with test cases in a sandboxed subprocess with timeout.
     
     Args:
         code: The fixed code to test
         test_code: The test cases to run
         entry_point: The function name being tested
-        timeout: Maximum execution time in seconds
+        timeout: Maximum execution time in seconds (default: 10)
         
     Returns:
         Tuple of (success: bool, error_message: Optional[str])
         - success: True if all tests passed, False otherwise
         - error_message: Error details if tests failed, None if passed
     """
-    # Create isolated namespace for execution
-    namespace = {
-        '__builtins__': __builtins__,
-        'sys': sys,
-    }
+    # Combine code and tests
+    full_code = f"{code}\n\n{test_code}"
     
     try:
-        # Capture stdout and stderr
-        stdout_capture = StringIO()
-        stderr_capture = StringIO()
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(full_code)
+            temp_file = f.name
         
-        with redirect_stdout(stdout_capture), redirect_stderr(stderr_capture):
-            # Execute the fixed code
-            exec(code, namespace)
+        # Run in subprocess with timeout
+        result = subprocess.run(
+            ['python', temp_file],
+            capture_output=True,
+            text=True,
+            timeout=timeout
+        )
+        
+        os.unlink(temp_file)
+        
+        if result.returncode == 0:
+            return True, None
+        else:
+            error_msg = result.stderr or result.stdout or "Unknown error"
+            return False, f"Tests failed: {error_msg[:500]}"
             
-            # Verify the entry point exists
-            if entry_point not in namespace:
-                return False, f"Entry point '{entry_point}' not found in fixed code"
-            
-            # Execute the tests
-            exec(test_code, namespace)
-            
-        # If we get here, all tests passed
-        return True, None
-        
-    except AssertionError as e:
-        # Test assertion failed
-        error_msg = f"Test assertion failed: {str(e)}\n{traceback.format_exc()}"
-        return False, error_msg
-        
-    except SyntaxError as e:
-        # Syntax error in code
-        error_msg = f"Syntax error: {str(e)}\n{traceback.format_exc()}"
-        return False, error_msg
-        
+    except subprocess.TimeoutExpired:
+        try:
+            os.unlink(temp_file)
+        except:
+            pass
+        return False, f"Execution timeout after {timeout} seconds"
     except Exception as e:
-        # Other runtime errors
-        error_msg = f"Runtime error: {str(e)}\n{traceback.format_exc()}"
-        return False, error_msg
+        return False, f"Execution error: {str(e)}"
 
 
 def evaluate_single_problem(problem: ProblemData, verbose: bool = True, enable_thinking: bool = False) -> ProblemOutput:

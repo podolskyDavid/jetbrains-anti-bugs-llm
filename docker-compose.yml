@@ -11,7 +11,7 @@ services:
       - OLLAMA_NUM_PARALLEL=4
       - OLLAMA_MAX_LOADED_MODELS=1
       - OLLAMA_NUM_CTX=12000
-    restart: unless-stopped
+      - OLLAMA_NUM_THREAD=12  # +++ More CPU threads for faster inference
     entrypoint: ["/bin/sh", "-c"]
     command: >
       "ollama serve &
@@ -22,10 +22,10 @@ services:
       resources:
         limits:
           cpus: '8'
-          memory: 6G
+          memory: 8G  # +++ Increased from 6G to 8G (more conservative)
         reservations:
           cpus: '4'
-          memory: 2G
+          memory: 4G  # +++ Increased from 2G to 4G
     healthcheck:
       test: ["CMD", "ollama", "list"]
       interval: 30s

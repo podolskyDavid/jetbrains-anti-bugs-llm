@@ -11,7 +11,12 @@ from langgraph.graph import StateGraph, START, END
 MODEL_NAME = os.getenv('OLLAMA_MODEL', 'hf.co/unsloth/Qwen3-1.7B-GGUF:UD-Q8_K_XL')
 OLLAMA_HOST = os.getenv('OLLAMA_HOST', 'http://localhost:11434')
 MAX_ITERATIONS = 3
-TEST_TIMEOUT = 30
+TEST_TIMEOUT = 5
+
+# +++ LLM Token/Repetition Limits
+MAX_OUTPUT_TOKENS = 1200      # Maximum tokens per LLM response
+REPEAT_LAST_N = 32            # Look back N tokens for repetition detection
+REPEAT_PENALTY = 1.3          # Penalty for repeating tokens (1.0 = none, higher = stronger)
 
 # Qwen3 runs in 2 modes: thinking and non-thinking. Unrelated to ReAct.
 def get_thinking_directive(enable_thinking: bool) -> str:
@@ -183,6 +188,9 @@ def create_react_graph(enable_thinking: bool, verbose: bool = False) -> StateGra
     llm = ChatOllama(
         model=MODEL_NAME,
         base_url=OLLAMA_HOST,
+        num_predict=MAX_OUTPUT_TOKENS,   # +++ Max tokens to generate - prevents infinite loops
+        repeat_last_n=REPEAT_LAST_N,     # +++ Look back N tokens for repetition detection
+        repeat_penalty=REPEAT_PENALTY,   # +++ Penalize repetition (1.0 = no penalty, higher = stronger)
         **llm_params
     )
     

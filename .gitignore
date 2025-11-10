@@ -59,9 +59,6 @@ Thumbs.db
 # Ollama models cache (optional, can be large)
 ollama_data/
 
-# Benchmark results
-results/
-benchmark_results.json
 
 # Files I personally use for testing
 src/testing.py
