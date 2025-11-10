@@ -66,7 +66,7 @@ The dataset includes six bug types: missing logic, excess logic, operator misuse
 **Why Tests-Only Input:**
 This strict input format ensures comparability with published HumanEvalFix benchmarks. Providing both tests and docstrings creates a custom hybrid variant with incomparable results.
 
-## Setup & Running
+## Setup & Running (please run in non-thinking mode)
 
 ### Option 1: Docker Compose (Fully Isolated and works out of the box, but might be slower on apple m-chips)
 
@@ -135,7 +135,7 @@ python src/run_benchmark.py --full                    # All 164 problems
 # With debug output (shows LLM responses and detailed test results)
 python src/run_benchmark.py --partial 10 --debug
 
-# Enable thinking mode (slower but potentially more accurate)
+# Enable thinking mode (slower but potentially more accurate and buggy)
 python src/run_benchmark.py --partial 10 --thinking --debug
 
 # Set thinking mode via environment variable

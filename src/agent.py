@@ -13,7 +13,7 @@ OLLAMA_HOST = os.getenv('OLLAMA_HOST', 'http://localhost:11434')
 MAX_ITERATIONS = 3
 TEST_TIMEOUT = 30
 
-
+# Qwen3 runs in 2 modes: thinking and non-thinking. Unrelated to ReAct.
 def get_thinking_directive(enable_thinking: bool) -> str:
     """Get the thinking mode directive for Qwen3 prompts."""
     return "" if enable_thinking else " /no_think"
@@ -129,8 +129,9 @@ def is_prime(n):
             return False
     return True
 
-Issue: Inefficient loop, checking all numbers up to n.
-Fixed Code:
+Thought: The loop checks every number from 2 to n-1. This is inefficient - we only need to check up to sqrt(n) because factors come in pairs.
+
+Action:
 def is_prime(n):
     if n < 2:
         return False
@@ -146,8 +147,9 @@ def factorial(n):
         return 1
     return n * factorial(n + 1)
 
-Issue: Wrong recursive call (n+1 instead of n-1), causes infinite recursion.
-Fixed Code:
+Thought: The recursive call uses n+1, which increases n instead of decreasing it. This causes infinite recursion. Should be n-1 to reach base case.
+
+Action:
 def factorial(n):
     if n == 0:
         return 1
@@ -162,8 +164,9 @@ def find_max(numbers):
             max_val = num
     return max_val
 
-Issue: Initializing max_val to 0 fails for all-negative lists.
-Fixed Code:
+Thought: Initializing max_val to 0 is wrong - if all numbers are negative, it returns 0 instead of the actual maximum. Should initialize to first element.
+
+Action:
 def find_max(numbers):
     max_val = numbers[0]
     for num in numbers:
@@ -188,47 +191,48 @@ def create_react_graph(enable_thinking: bool, verbose: bool = False) -> StateGra
         thinking_directive = get_thinking_directive(enable_thinking)
         iteration = state['iteration']
         
-        # Build context from previous attempts
+        # Build context from previous attempts using ReAct observation 
         context = ""
         if iteration > 0 and state.get('test_result'):
             context = f"""
-PREVIOUS ATTEMPT FAILED:
-{state['last_fix_attempt']}
-
-TEST RESULT:
+OBSERVATION (from previous attempt):
 {state['test_result']}
 
-Analyze what went wrong and generate an improved fix.
+Your previous action:
+{state['last_fix_attempt']}
+
+The test failed. Analyze why and try a different approach.
 """
         
         # Adjust output instructions based on thinking mode
         if enable_thinking:
-            output_instruction = """Output format:
+            output_instruction = """Follow the ReAct pattern:
+
+Thought: [Identify the bug and plan your fix - this will be in your internal reasoning]
+
+Action (output only the fixed code):
 ```python
 def {entry_point}(...):
     # fixed implementation
     pass
-```
-
-No explanations, just the code."""
+```"""
         else:
-            output_instruction = """Output format:
-**Reasoning:**
-[Brief explanation of the bug and your fix]
+            output_instruction = """Follow the ReAct pattern:
 
-**Final Answer**
+Thought: [Identify the bug and plan your fix]
+
+Action:
 ```python
 def {entry_point}(...):
     # fixed implementation
     pass
 ```"""
         
-        prompt = f"""You are an expert Python debugger. Fix the buggy code to pass all tests.
+        prompt = f"""You are an expert Python debugger using the ReAct (Reasoning + Acting) approach.
 
 {FEW_SHOT_EXAMPLES}
 
 CURRENT TASK:
-
 Buggy Code:
 {state['buggy_solution']}
 
@@ -237,18 +241,14 @@ Tests (must all pass):
 
 {context}
 
-INSTRUCTIONS:
-1. Analyze the bug carefully
-2. Generate a complete fixed function
-3. Preserve the original function name: {state['entry_point']}
-4. Make minimal changes - only fix what's broken
+{output_instruction.format(entry_point=state['entry_point'])}
 
-{output_instruction.format(entry_point=state['entry_point'])}{thinking_directive}"""
+Remember: Keep function name as {state['entry_point']}, make minimal changes.{thinking_directive}"""
         
         if verbose and iteration == 0:
-            print("+++ REACT ITERATION 1: ANALYZE AND FIX +++\n")
+            print("+++ REACT ITERATION 1: THOUGHT + ACTION +++\n")
         elif verbose:
-            print(f"+++ REACT ITERATION {iteration + 1}: REFINE FIX +++\n")
+            print(f"+++ REACT ITERATION {iteration + 1}: THOUGHT + ACTION (after observation) +++\n")
         
         full_response = ""
         for chunk in llm.stream(prompt):
@@ -271,7 +271,7 @@ INSTRUCTIONS:
     def test_code_node(state: AgentState) -> AgentState:
         """ReAct: Observation - test the fix and observe results."""
         if verbose:
-            print("+++ TESTING GENERATED FIX +++\n")
+            print("+++ REACT OBSERVATION: TESTING THE ACTION +++\n")
         
         passed, message = run_code_tests(
             state['last_fix_attempt'],
@@ -281,9 +281,9 @@ INSTRUCTIONS:
         
         if verbose:
             if passed:
-                print(f"Test Result: PASSED\n")
+                print(f"Observation: TESTS PASSED ✓\n")
             else:
-                print(f"Test Result: FAILED\n{message}\n")
+                print(f"Observation: TESTS FAILED\n{message}\n")
         
         # +++ If tests pass, this is our fixed solution
         # +++ If all attempts exhausted, return last attempt
@@ -294,14 +294,14 @@ INSTRUCTIONS:
         }
     
     def route_after_test(state: AgentState) -> Literal["analyze", "end"]:
-        """Route after observation: continue ReAct loop or end."""
-        # +++ Test passed - we're done!
+        """Route after Observation: continue ReAct loop or end."""
+        # +++ Observation shows success - we're done!
         if state['test_passed']:
             return "end"
-        # +++ Max iterations reached - return best attempt
+        # +++ Max ReAct iterations reached - return best attempt
         elif state['iteration'] >= MAX_ITERATIONS:
             return "end"
-        # +++ Continue ReAct loop: back to Thought + Action
+        # +++ Continue ReAct cycle: Observation → Thought + Action
         else:
             return "analyze"
     
@@ -388,10 +388,10 @@ def fix_code_agent(
     if verbose:
         print(f"\n{'='*80}")
         if result['test_passed']:
-            print("+++ REACT AGENT SUCCEEDED - ALL TESTS PASSED +++")
+            print("+++ REACT CYCLE COMPLETE: SUCCESS +++")
         else:
-            print(f"+++ REACT AGENT EXHAUSTED {MAX_ITERATIONS} ITERATIONS +++")
-            print("+++ Returning last attempt +++")
+            print(f"+++ REACT CYCLE STOPPED: {MAX_ITERATIONS} iterations exhausted +++")
+            print("+++ Returning last action +++")
         print(f"{'='*80}\n")
     
     return result["fixed_solution"]
