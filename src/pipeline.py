@@ -3,9 +3,10 @@ import os
 import json
 import tempfile
 import subprocess
+import traceback
 from typing import Optional
 
-from models import ProblemData, AgentInput, ProblemOutput, BenchmarkResult
+from models import ProblemData, ProblemOutput, BenchmarkResult
 from agent import fix_code_agent
 
 
